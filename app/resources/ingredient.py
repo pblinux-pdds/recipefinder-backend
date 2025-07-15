@@ -26,3 +26,26 @@ class IngredientResource(Resource):
                 'name': ingredient.name
             })
         return {'ingredients': result}, 200
+
+    def put(self, id):
+        data = request.get_json()
+        ingredient = Ingredient.query.get(id)
+        if not ingredient:
+            return {'error': 'Ingredient not found'}, 404
+
+        name = data.get('name')
+        if name:
+            ingredient.name = name
+            db.session.commit()
+            return {'message': 'Ingredient updated', 'id': ingredient.id, 'name': ingredient.name}, 200
+        else:
+            return {'error': 'No data to update'}, 400
+
+    def delete(self, id):
+        ingredient = Ingredient.query.get(id)
+        if not ingredient:
+            return {'error': 'Ingredient not found'}, 404
+
+        db.session.delete(ingredient)
+        db.session.commit()
+        return {'message': 'Ingredient deleted'}, 200

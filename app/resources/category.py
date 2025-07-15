@@ -34,3 +34,26 @@ class CategoryResource(Resource):
                     'name': category.name
                 })
             return {'categories': result}, 200
+
+    def put(self, id):
+        data = request.get_json()
+        category = Category.query.get(id)
+        if not category:
+            return {'error': 'Category not found'}, 404
+
+        name = data.get('name')
+        if name:
+            category.name = name
+            db.session.commit()
+            return {'message': 'Category updated', 'id': category.id, 'name': category.name}, 200
+        else:
+            return {'error': 'No data to update'}, 400
+
+    def delete(self, id):
+        category = Category.query.get(id)
+        if not category:
+            return {'error': 'Category not found'}, 404
+
+        db.session.delete(category)
+        db.session.commit()
+        return {'message': 'Category deleted'}, 200

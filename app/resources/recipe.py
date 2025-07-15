@@ -63,3 +63,39 @@ class RecipeResource(Resource):
                 'categories': [{'id': cat.id, 'name': cat.name} for cat in recipe.categories]
             })
         return jsonify(result), 200
+
+    @recipe_bp.route('/recipes/<int:id>', methods=['PUT'])
+    def update_recipe(id):
+        data = request.get_json()
+        recipe = Recipe.query.get(id)
+        if not recipe:
+            return jsonify({'error': 'Recipe not found'}), 404
+
+        recipe.name = data.get('name', recipe.name)
+        recipe.description = data.get('description', recipe.description)
+        recipe.instructions = data.get('instructions', recipe.instructions)
+        recipe.prep_time = data.get('prep_time', recipe.prep_time)
+        recipe.cook_time = data.get('cook_time', recipe.cook_time)
+        recipe.servings = data.get('servings', recipe.servings)
+        recipe.image_url = data.get('image_url', recipe.image_url)
+
+        ingredient_ids = data.get('ingredient_ids')
+        if ingredient_ids is not None:
+            recipe.ingredients = Ingredient.query.filter(Ingredient.id.in_(ingredient_ids)).all()
+
+        category_ids = data.get('category_ids')
+        if category_ids is not None:
+            recipe.categories = Category.query.filter(Category.id.in_(category_ids)).all()
+
+        db.session.commit()
+        return jsonify({'message': 'Recipe updated', 'id': recipe.id}), 200
+
+    @recipe_bp.route('/recipes/<int:id>', methods=['DELETE'])
+    def delete_recipe(id):
+        recipe = Recipe.query.get(id)
+        if not recipe:
+            return jsonify({'error': 'Recipe not found'}), 404
+
+        db.session.delete(recipe)
+        db.session.commit()
+        return jsonify({'message': 'Recipe deleted'}), 200
