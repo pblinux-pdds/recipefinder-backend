@@ -40,3 +40,26 @@ class RecipeResource(Resource):
         db.session.commit()
 
         return jsonify({'message': 'Recipe created', 'id': recipe.id}), 201
+
+    @recipe_bp.route('/recipes', methods=['GET'])
+    def get_recipes():
+        name = request.args.get('name')
+        query = Recipe.query
+        if name:
+            query = query.filter(Recipe.name.ilike(f"%{name}%"))
+        recipes = query.all()
+        result = []
+        for recipe in recipes:
+            result.append({
+                'id': recipe.id,
+                'name': recipe.name,
+                'description': recipe.description,
+                'instructions': recipe.instructions,
+                'prep_time': recipe.prep_time,
+                'cook_time': recipe.cook_time,
+                'servings': recipe.servings,
+                'image_url': recipe.image_url,
+                'ingredients': [{'id': ing.id, 'name': ing.name} for ing in recipe.ingredients],
+                'categories': [{'id': cat.id, 'name': cat.name} for cat in recipe.categories]
+            })
+        return jsonify(result), 200

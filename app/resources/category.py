@@ -15,4 +15,22 @@ class CategoryResource(Resource):
         db.session.add(category)
         db.session.commit()
 
-        return {'message': 'Category created', 'id': category.id},
+        return {'message': 'Category created', 'id': category.id}, 201
+
+    def get(self):
+        name = request.args.get('name')
+        if name:
+            category = Category.query.filter_by(name=name).first()
+            if category:
+                return {'category': {'id': category.id, 'name': category.name}}, 200
+            else:
+                return {'error': 'Category not found'}, 404
+        else:
+            categories = Category.query.all()
+            result = []
+            for category in categories:
+                result.append({
+                    'id': category.id,
+                    'name': category.name
+                })
+            return {'categories': result}, 200
